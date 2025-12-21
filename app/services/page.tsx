@@ -9,10 +9,10 @@ export default function Services() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const menuLinks = [
-    { label: "Services", href: "#" },
-    { label: "Book Repair", href: "#" },
-    { label: "Track Repair", href: "#" },
-    { label: "Shop", href: "#" },
+    { label: "Services", href: "/services" },
+    { label: "Book Repair", href: "book-repair" },
+    { label: "Track Repair", href: "track-repair" },
+    { label: "Shop", href: "/shop" },
   ];
 
   const services = [
