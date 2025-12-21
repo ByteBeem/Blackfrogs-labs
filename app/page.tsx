@@ -11,7 +11,7 @@ import {
   PlugZap,
   Droplet,
 } from "lucide-react";
-import ProductSlideshow from "../components/ProductSlideshow"; // path depends on your structure
+import ProductSlideshow from "../components/ProductSlideshow";
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,9 +30,11 @@ export default function Home() {
     { title: "Water Damage Treatment", icon: Droplet },
   ];
 
+  
+
   return (
     <main className="min-h-screen bg-background text-foreground relative overflow-hidden">
-      {/* Repeated Logo Watermark */}
+      {/* Logo Watermark */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-10 grid grid-cols-5 grid-rows-5 gap-8 p-8">
         {Array.from({ length: 25 }).map((_, i) => (
           <div key={i} className="relative w-20 h-20">
@@ -44,10 +46,7 @@ export default function Home() {
       {/* HEADER */}
       <header className="fixed top-0 z-50 w-full border-b border-foreground/10 bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Link
-            href="/"
-            className="flex items-center gap-3 text-lg font-extrabold tracking-wide"
-          >
+          <Link href="/" className="flex items-center gap-3 text-lg font-extrabold tracking-wide">
             <div className="relative w-8 h-8">
               <Image src="/logo.jpg" alt="BlackFrogs Labs" fill className="object-contain" />
             </div>
@@ -56,21 +55,13 @@ export default function Home() {
 
           <nav className="hidden md:flex items-center gap-8 text-sm text-foreground/70">
             {menuLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="hover:text-foreground transition"
-              >
+              <Link key={link.label} href={link.href} className="hover:text-foreground transition">
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden"
-            aria-label="Toggle menu"
-          >
+          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden" aria-label="Toggle menu">
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
@@ -79,12 +70,7 @@ export default function Home() {
           <div className="md:hidden border-t border-foreground/10 bg-background">
             <div className="flex flex-col gap-4 px-6 py-4">
               {menuLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="font-semibold"
-                >
+                <Link key={link.label} href={link.href} onClick={() => setMenuOpen(false)} className="font-semibold">
                   {link.label}
                 </Link>
               ))}
@@ -93,16 +79,24 @@ export default function Home() {
         )}
       </header>
 
-      {/* HERO / SLIDESHOW */}
-   
+      {/* FREE LOCAL DELIVERY — below header */}
+      <section className="mt-16 relative z-10 w-full bg-foreground/10 py-2">
+        <div className="max-w-7xl mx-auto px-6 text-center rounded-b-3xl shadow-sm">
+          <h3 className="text-md md:text-lg font-bold text-foreground">
+            Free Local Delivery
+          </h3>
+          <p className="text-xs md:text-sm text-foreground/70 mt-1">
+            On all orders within Lydenburg
+          </p>
+        </div>
+      </section>
 
- <section className="relative z-10 mt-16 px-6">
-  <div className="w-full h-[24rem] md:h-[32rem] lg:h-[36rem]">
-    <ProductSlideshow />
-  </div>
-</section>
-      
-      
+      {/* HERO / SLIDESHOW */}
+      <section className="relative z-10 mt-4 px-0">
+        <ProductSlideshow />
+      </section>
+
+
 
       {/* SERVICES */}
       <section className="mx-auto max-w-7xl px-6 pb-24 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 z-10 relative">
@@ -128,7 +122,9 @@ export default function Home() {
           <h3 className="text-2xl font-bold">Visit Our Repair Lab</h3>
           <p className="mt-2 text-foreground/70">Located in Lydenburg</p>
           <a
-            href="#"
+            href="https://www.google.com/maps/search/?api=1&query=-25.087717,30.416010"
+  target="_blank"
+  rel="noopener noreferrer"
             className="mt-6 inline-block rounded-full border border-foreground px-8 py-3 font-semibold transition hover:bg-foreground hover:text-background"
           >
             Open in Maps
