@@ -12,6 +12,8 @@ import {
   Droplet,
 } from "lucide-react";
 import ProductSlideshow from "../components/ProductSlideshow";
+import ChatBot from "../components/ChatBot";
+
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -96,8 +98,6 @@ export default function Home() {
         <ProductSlideshow />
       </section>
 
-
-
       {/* SERVICES */}
       <section className="mx-auto max-w-7xl px-6 pb-24 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 z-10 relative">
         {services.map(({ title, icon: Icon }) => (
@@ -157,6 +157,8 @@ export default function Home() {
         <p>© 2025 BlackFrogs Labs</p>
         <p>Professional Mobile Repairs • Lydenburg</p>
       </footer>
+      <ChatBot />
+
     </main>
   );
 }
