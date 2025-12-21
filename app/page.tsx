@@ -17,10 +17,10 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const menuLinks = [
-    { label: "Services", href: "#" },
-    { label: "Book Repair", href: "#" },
-    { label: "Track Repair", href: "#" },
-    { label: "Shop", href: "#" },
+    { label: "Services", href: "/services" },
+    { label: "Book Repair", href: "/book-repair" },
+    { label: "Track Repair", href: "/track-repair" },
+    { label: "Shop", href: "/shop" },
   ];
 
   const services = [
@@ -94,9 +94,15 @@ export default function Home() {
       </header>
 
       {/* HERO / SLIDESHOW */}
-      <section className="relative z-10 mt-16 px-6">
-        <ProductSlideshow />
-      </section>
+   
+
+ <section className="relative z-10 mt-16 px-6">
+  <div className="w-full h-[24rem] md:h-[32rem] lg:h-[36rem]">
+    <ProductSlideshow />
+  </div>
+</section>
+      
+      
 
       {/* SERVICES */}
       <section className="mx-auto max-w-7xl px-6 pb-24 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 z-10 relative">
@@ -120,7 +126,7 @@ export default function Home() {
       <section className="mx-auto max-w-3xl px-6 pb-20 z-10 relative">
         <div className="rounded-3xl border border-foreground/10 p-10 text-center shadow-sm bg-background/90">
           <h3 className="text-2xl font-bold">Visit Our Repair Lab</h3>
-          <p className="mt-2 text-foreground/70">Conveniently located in South Africa</p>
+          <p className="mt-2 text-foreground/70">Located in Lydenburg</p>
           <a
             href="#"
             className="mt-6 inline-block rounded-full border border-foreground px-8 py-3 font-semibold transition hover:bg-foreground hover:text-background"
@@ -153,7 +159,7 @@ export default function Home() {
           <Image src="/logo.jpg" alt="Logo" fill className="object-contain" />
         </div>
         <p>© 2025 BlackFrogs Labs</p>
-        <p>Professional Mobile Repairs • South Africa</p>
+        <p>Professional Mobile Repairs • Lydenburg</p>
       </footer>
     </main>
   );

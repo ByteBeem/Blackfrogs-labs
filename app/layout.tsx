@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "BlackFrogs Labs",
   description: "",
+  icons: {
+    icon: "/logo.jpg",
+  },
 };
 
 export default function RootLayout({
