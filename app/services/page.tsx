@@ -5,6 +5,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X, Smartphone, BatteryCharging, PlugZap, Droplet } from "lucide-react";
 
+import {
+  Facebook,
+  Instagram,
+  Twitter,
+  CreditCard,
+  Wallet,
+  Banknote,
+} from "lucide-react";
+
+
 export default function Services() {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -34,7 +44,7 @@ export default function Services() {
             <div className="relative w-8 h-8">
               <Image src="/logo.jpg" alt="BlackFrogs Labs" fill className="object-contain" />
             </div>
-            BlackFrogs Labs
+            Black Frog Labs
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-sm text-foreground/70">
@@ -118,6 +128,32 @@ export default function Services() {
           </Link>
         </div>
       </section>
+      
+{/* PAYMENT METHODS */}
+<section className="border-t border-foreground/10 py-12 relative z-10 bg-background">
+  <div className="max-w-7xl mx-auto px-6 text-center">
+    <h4 className="text-lg font-bold mb-6">
+      Secure & Convenient Payment Methods
+    </h4>
+
+    <div className="flex flex-wrap justify-center gap-6 text-foreground/70">
+      <div className="flex items-center gap-2 rounded-full border border-foreground/10 px-6 py-3">
+        <CreditCard size={20} />
+        <span className="text-sm font-medium">Visa / Mastercard</span>
+      </div>
+
+      <div className="flex items-center gap-2 rounded-full border border-foreground/10 px-6 py-3">
+        <Wallet size={20} />
+        <span className="text-sm font-medium">Mobile Wallets</span>
+      </div>
+
+      <div className="flex items-center gap-2 rounded-full border border-foreground/10 px-6 py-3">
+        <Banknote size={20} />
+        <span className="text-sm font-medium">Cash Payments</span>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* FOOTER */}
       <footer className="border-t border-foreground/10 py-10 text-center text-sm text-foreground/60 flex flex-col items-center gap-2 relative z-10">

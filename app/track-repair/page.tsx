@@ -39,7 +39,7 @@ export default function TrackRepair() {
             <div className="relative w-8 h-8">
               <Image src="/logo.jpg" alt="BlackFrogs Labs" fill className="object-contain" />
             </div>
-            BlackFrogs Labs
+            Black Frog Labs
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-sm text-foreground/70">

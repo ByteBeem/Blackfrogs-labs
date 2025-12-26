@@ -37,9 +37,9 @@ export default function BookRepair() {
             className="flex items-center gap-3 text-lg font-extrabold tracking-wide"
           >
             <div className="relative w-8 h-8">
-              <Image src="/logo.jpg" alt="BlackFrogs Labs" fill className="object-contain" />
+              <Image src="/logo.jpg" alt="Black Frog Labs" fill className="object-contain" />
             </div>
-            BlackFrogs Labs
+            Black Frog Labs
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-sm text-foreground/70">
