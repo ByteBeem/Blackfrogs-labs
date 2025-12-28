@@ -1,152 +1,131 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { socket } from "@/lib/socket";
+import { v4 as uuidv4 } from "uuid";
+import { Send, MessageCircle, X } from "lucide-react";
 
-type Message = {
-  from: "bot" | "user";
-  text: string;
-};
+type Msg = { sender: "visitor" | "admin"; text: string; createdAt?: string };
 
 export default function ChatBot() {
   const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      from: "bot",
-      text: " Welcome to BlackFrogs Assist.\nI’m here to help with repairs, pricing, and bookings.",
-    },
-  ]);
-
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    let visitorId = localStorage.getItem("visitor_id");
+    if (!visitorId) {
+      visitorId = uuidv4();
+      localStorage.setItem("visitor_id", visitorId);
+    }
+
+    socket.connect();
+    socket.emit("visitor:start", { visitorId });
+
+    socket.on("chat:started", ({ conversationId }) => {
+      localStorage.setItem("conversation_id", conversationId);
+      setConversationId(conversationId);
+      socket.emit("chat:join", { conversationId });
+    });
+
+    socket.on("chat:message", (msg: Msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    return () => {
+      socket.off("chat:message");
+      socket.disconnect();
+    };
+  }, [open]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const quickReplies = [
-    " Screen repair pricing",
-    " Battery replacement",
-    "opening hours",
-    " Where are you located?",
-  ];
+  const send = () => {
+    if (!input.trim() || !conversationId) return;
 
-  const botReply = (text: string) => {
-    const t = text.toLowerCase();
-    if (t.includes("screen"))
-      return " Screen repairs depend on model. Most are same-day. Tap WhatsApp for an instant quote.";
-    if (t.includes("battery"))
-      return "Battery replacements usually take under 60 minutes.";
-    if (t.includes("hour"))
-      return "we’re open Monday–Saturday, 9:00–17:00.";
-    if (t.includes("where") || t.includes("located"))
-      return " We’re based in Lydenburg. You can open Maps directly from the page.";
-    return " I can connect you to WhatsApp or help you book a repair.";
-  };
-
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return;
-
-    setMessages((prev) => [
-      ...prev,
-      { from: "user", text },
-      { from: "bot", text: botReply(text) },
-    ]);
+    socket.emit("chat:message", {
+      conversationId,
+      sender: "visitor",
+      text: input.trim(),
+    });
 
     setInput("");
   };
 
   return (
     <>
-      {/* Floating Launcher */}
+      {/* Floating Chat Button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 rounded-full bg-foreground text-background p-4 shadow-2xl hover:scale-105 transition"
-        aria-label="Open chat"
+        className="fixed bottom-6 right-6 bg-gradient-to-tr from-green-400 to-blue-500 text-white p-4 rounded-full shadow-lg hover:scale-105 transition-transform z-50"
       >
         <MessageCircle size={24} />
       </button>
 
-      {/* Fullscreen Chat */}
       {open && (
-        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col">
+        <div className="fixed inset-0 flex flex-col z-50 bg-gray-50 sm:bg-white shadow-xl sm:rounded-xl sm:m-4">
           {/* Header */}
-          <header className="flex items-center justify-between px-6 py-4 border-b border-foreground/10">
-            <div className="flex items-center gap-3">
-              <div className="rounded-full bg-foreground text-background p-2">
-                <Sparkles size={18} />
-              </div>
-              <div>
-                <h2 className="font-extrabold text-lg">BlackFrogs Assist</h2>
-                <p className="text-xs text-foreground/60">
-                  Smart repair support • Live guidance
-                </p>
-              </div>
-            </div>
-
-            <button
+          <header className="flex items-center justify-between bg-white sm:bg-gradient-to-r sm:from-green-400 sm:to-blue-500 text-gray-800 sm:text-white px-4 py-3 sm:rounded-t-xl shadow-sm">
+            <span className="font-semibold text-lg">BlackFrogs Assist</span>
+            <X
+              className="cursor-pointer hover:text-red-500 transition-colors"
               onClick={() => setOpen(false)}
-              className="rounded-full border border-foreground/20 p-2 hover:bg-foreground hover:text-background transition"
-              aria-label="Close chat"
-            >
-              <X size={18} />
-            </button>
+            />
           </header>
 
           {/* Messages */}
-          <main className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
-            {messages.map((msg, i) => (
+          <main className="flex-1 overflow-y-auto p-4 space-y-3 sm:space-y-4">
+            {messages.map((m, i) => (
               <div
                 key={i}
-                className={`max-w-xl ${
-                  msg.from === "user" ? "ml-auto text-right" : ""
+                className={`flex ${
+                  m.sender === "visitor" ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
-                  className={`inline-block rounded-3xl px-6 py-3 text-sm leading-relaxed ${
-                    msg.from === "user"
-                      ? "bg-foreground text-background"
-                      : "bg-foreground/10"
-                  }`}
+                  className={`px-4 py-2 max-w-[70%] text-sm break-words shadow-sm
+                    ${
+                      m.sender === "visitor"
+                        ? "bg-gradient-to-r from-green-200 to-green-300 text-gray-900 rounded-tl-xl rounded-bl-xl rounded-tr-xl"
+                        : "bg-gray-200 text-gray-900 rounded-tr-xl rounded-br-xl rounded-tl-xl"
+                    }`}
                 >
-                  {msg.text}
+                  {m.text}
+                  {m.createdAt && (
+                    <div className="text-xs text-gray-600 mt-1 opacity-80 text-right">
+                      {new Date(m.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
             <div ref={bottomRef} />
           </main>
 
-          {/* Quick Actions */}
-          <div className="px-6 pb-4 flex flex-wrap gap-2">
-            {quickReplies.map((q) => (
-              <button
-                key={q}
-                onClick={() => sendMessage(q)}
-                className="rounded-full border border-foreground/20 px-4 py-2 text-xs font-medium hover:bg-foreground hover:text-background transition"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-
           {/* Input */}
-          <footer className="border-t border-foreground/10 px-6 py-4">
-            <div className="flex items-center gap-3">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
-                placeholder="Ask about repairs, pricing, or availability…"
-                className="flex-1 rounded-full border border-foreground/20 px-6 py-3 text-sm outline-none focus:border-foreground"
-              />
-              <button
-                onClick={() => sendMessage(input)}
-                className="rounded-full bg-foreground text-background p-3 hover:scale-105 transition"
-                aria-label="Send message"
-              >
-                <Send size={18} />
-              </button>
-            </div>
+          <footer className="flex items-center border-t p-3 bg-white sm:rounded-b-xl">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && send()}
+              placeholder="Type a message..."
+              className="flex-1 border border-gray-300 rounded-full px-4 py-2 mr-2 focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-300 transition"
+            />
+            <button
+              onClick={send}
+              className="bg-green-400 hover:bg-green-500 text-white p-3 rounded-full flex items-center justify-center transition shadow"
+            >
+              <Send size={18} />
+            </button>
           </footer>
         </div>
       )}
