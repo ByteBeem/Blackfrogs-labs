@@ -2,166 +2,232 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { Menu, X, Smartphone, BatteryCharging, PlugZap, Droplet } from "lucide-react";
-
 import {
-  Facebook,
-  Instagram,
-  Twitter,
+  Smartphone,
+  BatteryCharging,
+  PlugZap,
+  Droplet,
   CreditCard,
   Wallet,
   Banknote,
+  CheckCircle2,
+  Clock,
+  Shield,
+  Wrench,
 } from "lucide-react";
-
+import Header from "../../components/Header";
 
 export default function Services() {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const menuLinks = [
-    { label: "Services", href: "/services" },
-    { label: "Book Repair", href: "book-repair" },
-    { label: "Track Repair", href: "track-repair" },
-    { label: "Shop", href: "/shop" },
+  const services = [
+    {
+      title: "Screen Repair",
+      icon: Smartphone,
+      description: "High-quality OLED & LCD replacements with precision calibration",
+      features: ["Same-day service", "OEM-quality parts", "Touch sensitivity test", "Color accuracy guaranteed"],
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      title: "Battery Replacement",
+      icon: BatteryCharging,
+      description: "Premium batteries for extended device longevity and performance",
+      features: ["90-day warranty", "Capacity testing", "Safe disposal", "Health diagnostics"],
+      color: "from-emerald-500 to-teal-500",
+    },
+    {
+      title: "Charging Port Repair",
+      icon: PlugZap,
+      description: "Fix connectivity issues and restore fast charging capabilities",
+      features: ["USB-C & Lightning", "Quick turnaround", "Connection testing", "Cable included"],
+      color: "from-amber-500 to-orange-500",
+    },
+    {
+      title: "Water Damage Treatment",
+      icon: Droplet,
+      description: "Advanced liquid damage recovery with specialized equipment",
+      features: ["Ultrasonic cleaning", "Component repair", "Data recovery", "Prevention tips"],
+      color: "from-indigo-500 to-purple-500",
+    },
   ];
 
-  const services = [
-    { title: "Screen Repair", icon: Smartphone, description: "High-quality parts, expert technicians, fast turnaround." },
-    { title: "Battery Replacement", icon: BatteryCharging, description: "Keep your device running longer with a new battery." },
-    { title: "Charging Port Repair", icon: PlugZap, description: "Fix faulty ports and enjoy fast, reliable charging." },
-    { title: "Water Damage Treatment", icon: Droplet, description: "Professional diagnostics and repair after water exposure." },
+  const paymentMethods = [
+    { icon: CreditCard, name: "Visa / Mastercard" },
+    { icon: Wallet, name: "Mobile Wallets" },
+    { icon: Banknote, name: "Cash Payments" },
+  ];
+
+  const whyChooseUs = [
+    { icon: Clock, title: "Fast Service", description: "Most repairs completed within 24 hours" },
+    { icon: Shield, title: "Quality Guarantee", description: "90-day warranty on all repairs" },
+    { icon: Wrench, title: "Expert Technicians", description: "Certified professionals with years of experience" },
+    { icon: CheckCircle2, title: "Fair Pricing", description: "Competitive rates with no hidden fees" },
   ];
 
   return (
-    <main className="min-h-screen bg-background text-foreground relative overflow-hidden">
-      {/* HEADER */}
-      <header className="fixed top-0 z-50 w-full border-b border-foreground/10 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Link
-            href="/"
-            className="flex items-center gap-3 text-lg font-extrabold tracking-wide"
-          >
-            <div className="relative w-8 h-8">
-              <Image src="/logo.jpg" alt="BlackFrogs Labs" fill className="object-contain" />
-            </div>
-            Black Frog Labs
-          </Link>
+    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white relative overflow-hidden">
+      {/* Background effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 -left-48 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+      </div>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm text-foreground/70">
-            {menuLinks.map((link) => (
-              <Link key={link.label} href={link.href} className="hover:text-foreground transition">
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+      <Header />
 
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden"
-            aria-label="Toggle menu"
-          >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+      {/* HERO SECTION */}
+      <section className="relative z-10 mt-16 md:mt-20 pt-12 md:pt-20 pb-12 md:pb-16 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto text-center space-y-4 md:space-y-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+            Professional Mobile Repair Services
+          </h1>
+          <p className="text-slate-400 text-base md:text-lg lg:text-xl max-w-3xl mx-auto leading-relaxed">
+            Expert repairs for all your devices with certified technicians, premium parts,
+            and lightning-fast turnaround times
+          </p>
         </div>
+      </section>
 
-        {menuOpen && (
-          <div className="md:hidden border-t border-foreground/10 bg-background">
-            <div className="flex flex-col gap-4 px-6 py-4">
-              {menuLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="font-semibold"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+      {/* WHY CHOOSE US */}
+      <section className="relative z-10 px-4 md:px-6 pb-12 md:pb-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {whyChooseUs.map(({ icon: Icon, title, description }) => (
+              <div
+                key={title}
+                className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-emerald-500/50 transition-all duration-300 hover:scale-105"
+              >
+                <Icon className="w-8 h-8 md:w-10 md:h-10 text-emerald-400 mb-3 md:mb-4" />
+                <h3 className="font-bold text-sm md:text-base mb-1 md:mb-2">{title}</h3>
+                <p className="text-xs md:text-sm text-slate-400 leading-relaxed">{description}</p>
+              </div>
+            ))}
           </div>
-        )}
-      </header>
-
-      {/* HERO */}
-      <section className="relative z-10 mt-16 bg-gradient-to-r from-foreground/5 to-background/5 py-20 text-center">
-        <h1 className="text-4xl font-extrabold mb-4">Professional Mobile Repair Services</h1>
-        <p className="text-foreground/70 max-w-xl mx-auto">
-          We provide expert repairs for your devices with certified technicians and high-quality parts.
-          Fast turnaround times and reliable service guaranteed.
-        </p>
+        </div>
       </section>
 
       {/* SERVICES GRID */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {services.map(({ title, icon: Icon, description }) => (
-          <div
-            key={title}
-            className="rounded-3xl border border-foreground/10 p-8 shadow-lg transition hover:-translate-y-2 hover:shadow-2xl bg-background/90 flex flex-col items-center text-center"
-          >
-            <div className="w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-foreground/10">
-              <Icon size={32} className="text-foreground" />
-            </div>
-            <h3 className="mb-2 font-bold text-lg">{title}</h3>
-            <p className="text-sm text-foreground/70">{description}</p>
+      <section className="relative z-10 px-4 md:px-6 pb-12 md:pb-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            {services.map(({ title, icon: Icon, description, features, color }) => (
+              <div
+                key={title}
+                className="group relative bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl md:rounded-3xl p-6 md:p-8 hover:border-transparent transition-all duration-500 hover:scale-[1.02] overflow-hidden"
+              >
+                {/* Gradient background on hover */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
+                
+                {/* Header */}
+                <div className="relative flex items-start gap-4 md:gap-6 mb-4 md:mb-6">
+                  <div className={`flex-shrink-0 w-14 h-14 md:w-16 md:h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br ${color} p-0.5 group-hover:scale-110 transition-transform duration-300`}>
+                    <div className="w-full h-full bg-slate-900 rounded-2xl flex items-center justify-center">
+                      <Icon size={28} className="text-white md:w-8 md:h-8" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <h3 className="text-xl md:text-2xl font-bold mb-2 group-hover:text-emerald-400 transition-colors">
+                      {title}
+                    </h3>
+                    <p className="text-sm md:text-base text-slate-400 leading-relaxed">
+                      {description}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Features */}
+                <ul className="relative space-y-2 md:space-y-3">
+                  {features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-2 md:gap-3 text-xs md:text-sm text-slate-300">
+                      <CheckCircle2 size={16} className={`flex-shrink-0 text-emerald-400 md:w-5 md:h-5`} />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                {/* Bottom line */}
+                <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${color} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500`} />
+              </div>
+            ))}
           </div>
-        ))}
-      </section>
-
-      {/* CTA */}
-      <section className="pb-24 flex flex-col items-center gap-4 text-center z-10 relative">
-        <h3 className="text-2xl font-bold">Need Help with Your Device?</h3>
-        <p className="text-foreground/70 max-w-md">
-          Book a repair or track your device in real-time. Our team is ready to assist you!
-        </p>
-        <div className="flex gap-4 mt-4">
-          <Link
-            href="/book-repair"
-            className="rounded-full bg-foreground px-10 py-4 font-bold text-background transition hover:opacity-90"
-          >
-            Book Repair
-          </Link>
-          <Link
-            href="/track-repair"
-            className="rounded-full border border-foreground px-10 py-4 font-bold transition hover:bg-foreground hover:text-background"
-          >
-            Track Repair
-          </Link>
         </div>
       </section>
-      
-{/* PAYMENT METHODS */}
-<section className="border-t border-foreground/10 py-12 relative z-10 bg-background">
-  <div className="max-w-7xl mx-auto px-6 text-center">
-    <h4 className="text-lg font-bold mb-6">
-      Secure & Convenient Payment Methods
-    </h4>
 
-    <div className="flex flex-wrap justify-center gap-6 text-foreground/70">
-      <div className="flex items-center gap-2 rounded-full border border-foreground/10 px-6 py-3">
-        <CreditCard size={20} />
-        <span className="text-sm font-medium">Visa / Mastercard</span>
-      </div>
+      {/* CTA SECTION */}
+      <section className="relative z-10 px-4 md:px-6 pb-12 md:pb-20">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-2xl md:rounded-3xl p-8 md:p-12 text-center overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-50" />
+            
+            <div className="relative space-y-4 md:space-y-6">
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold">
+                Need Help with Your Device?
+              </h3>
+              <p className="text-slate-400 text-sm md:text-base max-w-2xl mx-auto">
+                Book a repair or track your device in real-time. Our team is ready to assist you
+                with any mobile repair needs!
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+                <Link
+                  href="/book-repair"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold rounded-full shadow-lg hover:shadow-emerald-500/50 transition-all duration-300 hover:scale-105"
+                >
+                  Book Repair
+                </Link>
+                <Link
+                  href="/track-repair"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 md:px-10 py-3 md:py-4 border-2 border-emerald-500 text-emerald-400 font-bold rounded-full hover:bg-emerald-500 hover:text-white transition-all duration-300 hover:scale-105"
+                >
+                  Track Repair
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <div className="flex items-center gap-2 rounded-full border border-foreground/10 px-6 py-3">
-        <Wallet size={20} />
-        <span className="text-sm font-medium">Mobile Wallets</span>
-      </div>
+      {/* PAYMENT METHODS */}
+      <section className="relative z-10 border-t border-slate-800 bg-slate-950/50 backdrop-blur-sm py-10 md:py-12 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto text-center space-y-6 md:space-y-8">
+          <h4 className="text-lg md:text-xl font-bold text-slate-300">
+            Secure & Convenient Payment Methods
+          </h4>
 
-      <div className="flex items-center gap-2 rounded-full border border-foreground/10 px-6 py-3">
-        <Banknote size={20} />
-        <span className="text-sm font-medium">Cash Payments</span>
-      </div>
-    </div>
-  </div>
-</section>
+          <div className="flex flex-wrap justify-center gap-3 md:gap-4">
+            {paymentMethods.map(({ icon: Icon, name }) => (
+              <div
+                key={name}
+                className="flex items-center gap-2 md:gap-3 rounded-full border border-slate-800 bg-slate-900/50 px-4 md:px-6 py-2 md:py-3 hover:border-emerald-500/50 transition-all duration-300 hover:scale-105"
+              >
+                <Icon size={18} className="text-emerald-400 md:w-5 md:h-5" />
+                <span className="text-xs md:text-sm font-medium text-slate-300">{name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-foreground/10 py-10 text-center text-sm text-foreground/60 flex flex-col items-center gap-2 relative z-10">
-        <div className="relative w-10 h-10">
-          <Image src="/logo.jpg" alt="Logo" fill className="object-contain" />
+      <footer className="relative z-10 border-t border-slate-800 bg-slate-950/50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-12">
+          <div className="flex flex-col items-center gap-4 md:gap-6 text-center">
+            <div className="relative w-12 h-12 md:w-16 md:h-16">
+              <Image src="/logo.jpg" alt="BlackFrogs Labs" fill className="object-contain rounded-xl" />
+            </div>
+            
+            <div>
+              <h4 className="text-lg md:text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+                BlackFrogs Labs
+              </h4>
+              <p className="text-slate-400 text-xs md:text-sm">
+                Professional Mobile Repairs • Lydenburg
+              </p>
+            </div>
+            
+            <p className="text-slate-500 text-xs md:text-sm">
+              © 2025 BlackFrogs Labs. All rights reserved.
+            </p>
+          </div>
         </div>
-        <p>© 2025 BlackFrogs Labs</p>
-        <p>Professional Mobile Repairs • Lydenburg</p>
       </footer>
     </main>
   );
