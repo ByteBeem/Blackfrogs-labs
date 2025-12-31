@@ -3,13 +3,15 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { socket } from "@/lib/socket";
 import { v4 as uuidv4 } from "uuid";
-import { Send, MessageCircle, X, Loader2 } from "lucide-react";
+import { Send, MessageCircle, X, Loader2, CheckCheck, Check } from "lucide-react";
 
 type Message = {
-  id?: string;
+  id: string;
+  conversationId: string;
   sender: "visitor" | "admin";
   text: string;
-  createdAt?: string;
+  createdAt: string;
+  read?: boolean;
   pending?: boolean;
 };
 
@@ -21,8 +23,46 @@ export default function ChatBot() {
   const [isConnected, setIsConnected] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const hasLoadedHistory = useRef(false);
+
+  // Load message history from API when conversation exists
+  const loadMessageHistory = useCallback(async (convId: string) => {
+    if (hasLoadedHistory.current) return;
+    
+    setIsLoadingHistory(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000"}/api/messages?conversationId=${convId}`
+      );
+      
+      if (response.ok) {
+        const history = await response.json();
+        setMessages(history);
+        hasLoadedHistory.current = true;
+      } else if (response.status === 404 || response.status === 400) {
+        // Conversation doesn't exist anymore, clear localStorage and start fresh
+        console.log("[Visitor] Conversation not found, starting new conversation");
+        localStorage.removeItem("conversation_id");
+        setConversationId(null);
+        hasLoadedHistory.current = false;
+        
+        // Restart conversation
+        const visitorId = localStorage.getItem("visitor_id") || uuidv4();
+        socket.emit("visitor:start", { visitorId });
+      }
+    } catch (err) {
+      console.error("Failed to load message history:", err);
+      // If error, also try to start fresh
+      localStorage.removeItem("conversation_id");
+      setConversationId(null);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, []);
 
   // Initialize socket connection when chat opens
   useEffect(() => {
@@ -35,57 +75,106 @@ export default function ChatBot() {
     }
 
     // Connect socket
-    socket.connect();
+    if (!socket.connected) {
+      socket.connect();
+    }
 
     const handleConnect = () => {
+      console.log("[Visitor] Socket connected:", socket.id);
       setIsConnected(true);
       setError(null);
       
       const savedConversation = localStorage.getItem("conversation_id");
 
       if (savedConversation) {
-        setConversationId(savedConversation);
-        socket.emit("chat:join", { conversationId: savedConversation });
+        // Try to load history first to validate conversation exists
+        loadMessageHistory(savedConversation).then(() => {
+          // Only join if conversation is valid (not cleared by loadMessageHistory)
+          const currentConvId = localStorage.getItem("conversation_id");
+          if (currentConvId) {
+            setConversationId(currentConvId);
+            socket.emit("chat:join", { conversationId: currentConvId });
+          }
+        });
       } else {
+        // Start new conversation
         socket.emit("visitor:start", { visitorId });
       }
     };
 
-    const handleDisconnect = () => {
+    const handleDisconnect = (reason: string) => {
+      console.log("[Visitor] Socket disconnected:", reason);
       setIsConnected(false);
     };
 
     const handleConnectError = (err: Error) => {
       setError("Connection failed. Please try again.");
-      console.error("Socket connection error:", err);
+      console.error("[Visitor] Socket connection error:", err);
     };
 
-    const handleChatStarted = ({ conversationId }: { conversationId: string }) => {
-      localStorage.setItem("conversation_id", conversationId);
-      setConversationId(conversationId);
-      socket.emit("chat:join", { conversationId });
-    };
-
-    const handleChatHistory = ({ messages: historyMessages }: { messages: Message[] }) => {
-      setMessages(historyMessages);
+    const handleChatStarted = ({ conversationId: newConvId, isNewConversation }: { 
+      conversationId: string;
+      isNewConversation?: boolean;
+    }) => {
+      console.log("[Visitor] Chat started:", newConvId, "isNew:", isNewConversation);
+      localStorage.setItem("conversation_id", newConvId);
+      setConversationId(newConvId);
+      socket.emit("chat:join", { conversationId: newConvId });
+      
+      // Load history if rejoining existing conversation
+      if (!isNewConversation) {
+        loadMessageHistory(newConvId);
+      } else {
+        // Clear messages for new conversation
+        setMessages([]);
+        hasLoadedHistory.current = true;
+      }
     };
 
     const handleMessage = (msg: Message) => {
-      setMessages((prev) => {
-        // Remove any pending messages with same text
-        const filtered = prev.filter(m => !(m.pending && m.text === msg.text));
-        return [...filtered, msg];
-      });
+      console.log("[Visitor] Message received:", msg);
+      
+      if (msg.conversationId === conversationId || !conversationId) {
+        setMessages((prev) => {
+          // Remove any pending messages with same text
+          const filtered = prev.filter(m => !(m.pending && m.text === msg.text));
+          
+          // Check if message already exists
+          if (filtered.some(m => m.id === msg.id)) {
+            return filtered;
+          }
+          
+          return [...filtered, msg];
+        });
+      }
     };
 
-    const handleTyping = ({ sender, isTyping: typing }: { sender: string; isTyping: boolean }) => {
+    const handleTyping = ({ sender, isTyping: typing }: { 
+      sender: string; 
+      isTyping: boolean;
+    }) => {
       if (sender === "admin") {
         setIsTyping(typing);
       }
     };
 
     const handleError = ({ message }: { message: string }) => {
+      console.error("[Visitor] Socket error:", message);
       setError(message);
+      
+      // If error is about invalid conversation, clear and restart
+      if (message.includes("conversation") || message.includes("not found")) {
+        localStorage.removeItem("conversation_id");
+        setConversationId(null);
+        setMessages([]);
+        
+        // Restart conversation
+        const visitorId = localStorage.getItem("visitor_id") || uuidv4();
+        setTimeout(() => {
+          socket.emit("visitor:start", { visitorId });
+        }, 1000);
+      }
+      
       setTimeout(() => setError(null), 5000);
     };
 
@@ -94,23 +183,33 @@ export default function ChatBot() {
     socket.on("disconnect", handleDisconnect);
     socket.on("connect_error", handleConnectError);
     socket.on("chat:started", handleChatStarted);
-    socket.on("chat:history", handleChatHistory);
     socket.on("chat:message", handleMessage);
     socket.on("chat:typing", handleTyping);
     socket.on("error", handleError);
+
+    // If already connected, trigger connect handler
+    if (socket.connected) {
+      handleConnect();
+    }
 
     return () => {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       socket.off("connect_error", handleConnectError);
       socket.off("chat:started", handleChatStarted);
-      socket.off("chat:history", handleChatHistory);
       socket.off("chat:message", handleMessage);
       socket.off("chat:typing", handleTyping);
       socket.off("error", handleError);
-      socket.disconnect();
+      
+      // Don't disconnect socket on unmount - keep it alive for notifications
+      // socket.disconnect();
     };
-  }, [open]);
+  }, [open, conversationId, loadMessageHistory]);
+
+  // Reset history flag when conversation changes
+  useEffect(() => {
+    hasLoadedHistory.current = false;
+  }, [conversationId]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -121,7 +220,7 @@ export default function ChatBot() {
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
 
-    if (conversationId) {
+    if (conversationId && isConnected) {
       socket.emit("chat:typing", { conversationId, isTyping: true });
 
       // Clear existing timeout
@@ -134,7 +233,7 @@ export default function ChatBot() {
         socket.emit("chat:typing", { conversationId, isTyping: false });
       }, 1000);
     }
-  }, [conversationId]);
+  }, [conversationId, isConnected]);
 
   const send = useCallback(() => {
     if (!input.trim() || !conversationId || !isConnected) return;
@@ -143,11 +242,13 @@ export default function ChatBot() {
 
     // Optimistically add message to UI
     const pendingMessage: Message = {
-      id: uuidv4(),
+      id: `pending-${Date.now()}`,
+      conversationId,
       sender: "visitor",
       text: messageText,
       createdAt: new Date().toISOString(),
-      pending: true
+      pending: true,
+      read: false
     };
 
     setMessages((prev) => [...prev, pendingMessage]);
@@ -172,6 +273,30 @@ export default function ChatBot() {
       send();
     }
   }, [send]);
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const groupMessagesByDate = (msgs: Message[]) => {
+    const groups: { [key: string]: Message[] } = {};
+    
+    msgs.forEach((msg) => {
+      const date = new Date(msg.createdAt).toLocaleDateString();
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(msg);
+    });
+
+    return groups;
+  };
+
+  const messageGroups = groupMessagesByDate(messages);
 
   return (
     <>
@@ -214,48 +339,82 @@ export default function ChatBot() {
 
           {/* Error Banner */}
           {error && (
-            <div className="bg-red-50 border-b border-red-200 px-4 py-2 text-sm text-red-700">
-              {error}
+            <div className="bg-red-50 border-b border-red-200 px-4 py-2 text-sm text-red-700 flex items-center justify-between">
+              <span>{error}</span>
+              <button
+                onClick={() => setError(null)}
+                className="text-red-700 hover:text-red-900"
+              >
+                <X size={16} />
+              </button>
             </div>
           )}
 
           {/* Messages */}
           <main className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
-            {messages.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-full text-gray-400 text-center px-4">
-                <MessageCircle size={48} className="mb-3 opacity-30" />
-                <p className="text-sm">Welcome! How can we help you today?</p>
+            {isLoadingHistory && (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                <Loader2 size={32} className="animate-spin mb-3" />
+                <p className="text-sm">Loading messages...</p>
               </div>
             )}
 
-            {messages.map((m, i) => (
-              <div
-                key={m.id || i}
-                className={`flex ${
-                  m.sender === "visitor" ? "justify-end" : "justify-start"
-                } animate-fadeIn`}
-              >
-                <div
-                  className={`px-4 py-2.5 max-w-[80%] text-sm break-words shadow-sm transition-all
-                    ${m.pending ? 'opacity-60' : 'opacity-100'}
-                    ${
-                      m.sender === "visitor"
-                        ? "bg-gradient-to-br from-green-400 to-green-500 text-white rounded-tl-2xl rounded-bl-2xl rounded-tr-md"
-                        : "bg-white text-gray-800 rounded-tr-2xl rounded-br-2xl rounded-tl-md border border-gray-200"
-                    }`}
-                >
-                  <p className="whitespace-pre-wrap">{m.text}</p>
-                  {m.createdAt && (
-                    <div className={`text-xs mt-1.5 ${
-                      m.sender === "visitor" ? "text-green-100" : "text-gray-400"
-                    }`}>
-                      {new Date(m.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </div>
-                  )}
+            {!isLoadingHistory && messages.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400 text-center px-4">
+                <MessageCircle size={48} className="mb-3 opacity-30" />
+                <p className="text-sm font-medium">Welcome to BlackFrogs Assist!</p>
+                <p className="text-xs mt-1">How can we help you today?</p>
+              </div>
+            )}
+
+            {!isLoadingHistory && Object.entries(messageGroups).map(([date, msgs]) => (
+              <div key={date}>
+                {/* Date separator */}
+                <div className="flex items-center justify-center my-4">
+                  <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
+                    {date === new Date().toLocaleDateString() ? "Today" : date}
+                  </div>
                 </div>
+
+                {/* Messages for this date */}
+                {msgs.map((m) => (
+                  <div
+                    key={m.id}
+                    className={`flex ${
+                      m.sender === "visitor" ? "justify-end" : "justify-start"
+                    } animate-fadeIn mb-3`}
+                  >
+                    <div className={`max-w-[80%] ${m.pending ? 'opacity-60' : 'opacity-100'}`}>
+                      <div
+                        className={`px-4 py-2.5 text-sm break-words shadow-sm transition-all
+                          ${
+                            m.sender === "visitor"
+                              ? "bg-gradient-to-br from-green-400 to-green-500 text-white rounded-tl-2xl rounded-bl-2xl rounded-tr-md"
+                              : "bg-white text-gray-800 rounded-tr-2xl rounded-br-2xl rounded-tl-md border border-gray-200"
+                          }`}
+                      >
+                        <p className="whitespace-pre-wrap">{m.text}</p>
+                      </div>
+                      <div className={`text-xs mt-1 px-1 flex items-center gap-1 ${
+                        m.sender === "visitor" ? "justify-end text-gray-500" : "justify-start text-gray-400"
+                      }`}>
+                        <span>{formatTime(m.createdAt)}</span>
+                        {m.sender === "visitor" && !m.pending && (
+                          <span>
+                            {m.read ? (
+                              <CheckCheck size={14} className="text-blue-500" />
+                            ) : (
+                              <Check size={14} className="text-gray-400" />
+                            )}
+                          </span>
+                        )}
+                        {m.pending && (
+                          <Loader2 size={12} className="animate-spin" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ))}
 
@@ -277,18 +436,25 @@ export default function ChatBot() {
 
           {/* Input */}
           <footer className="border-t bg-white p-3 sm:rounded-b-2xl">
+            {!isConnected && (
+              <div className="mb-2 text-center">
+                <p className="text-xs text-orange-500">
+                  Reconnecting to server...
+                </p>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <input
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder={isConnected ? "Type a message..." : "Connecting..."}
-                disabled={!isConnected}
+                placeholder={isConnected && conversationId ? "Type a message..." : "Connecting..."}
+                disabled={!isConnected || !conversationId}
                 className="flex-1 border border-gray-300 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
               />
               <button
                 onClick={send}
-                disabled={!input.trim() || !isConnected}
+                disabled={!input.trim() || !isConnected || !conversationId}
                 className="bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white p-3 rounded-full flex items-center justify-center transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-green-400 disabled:hover:to-green-500"
                 aria-label="Send message"
               >
