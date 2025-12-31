@@ -26,7 +26,7 @@ export default function ChatBot() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   
   const bottomRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasLoadedHistory = useRef(false);
 
   // Load message history from API when conversation exists

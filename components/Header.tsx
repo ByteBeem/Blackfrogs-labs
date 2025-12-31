@@ -80,9 +80,7 @@ export default function Header() {
         {/* Mobile Menu Button */}
         <div className="lg:hidden flex items-center gap-2">
           {/* Mobile Theme Toggle */}
-          <div className="scale-75">
-            <ThemeToggle />
-          </div>
+        
           
           <button
             onClick={() => setMenuOpen(!menuOpen)}
