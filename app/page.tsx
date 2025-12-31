@@ -19,7 +19,7 @@ import {
 import ProductSlideshow from "../components/ProductSlideshow";
 import ChatBot from "../components/ChatBot";
 import Header from "../components/Header";
-import { ThemeToggleFloating } from "../components/ThemeToggle";
+
 
 export default function Home() {
   const services = [
