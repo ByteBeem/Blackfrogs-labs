@@ -36,7 +36,7 @@ export default function ChatBot() {
     setIsLoadingHistory(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SOCKET_URL || "http://ec2-44-210-134-149.compute-1.amazonaws.com"}/api/messages?conversationId=${convId}`
+        `http://ec2-44-210-134-149.compute-1.amazonaws.com/api/messages?conversationId=${convId}`
       );
       
       if (response.ok) {
