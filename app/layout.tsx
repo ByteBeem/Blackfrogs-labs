@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "../components/ThemeProvider";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,9 +32,9 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} antialiased transition-colors duration-300`}>
-        <ThemeProvider>
+       
           {children}
-        </ThemeProvider>
+        
       </body>
     </html>
   );
