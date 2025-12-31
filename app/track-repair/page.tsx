@@ -15,42 +15,52 @@ import {
 import Header from "../../components/Header";
 import ChatBot from "../../components/ChatBot";
 
+type RepairStage = {
+  key: string;
+  label: string;
+  completed: boolean;
+};
+
+type RepairStatus = {
+  id: string;
+  device: string;
+  status: string;
+  estimatedCompletion: string;
+  currentStage: string;
+  stages: RepairStage[];
+};
+
 export default function TrackRepair() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "found" | "not-found">("idle");
+  const [repairStatus, setRepairStatus] = useState<RepairStatus | null>(null);
 
-  const repairStatus = {
-    id: "REP-2024-001",
-    device: "iPhone 13 Pro",
-    status: "in-repair",
-    estimatedCompletion: "1-2 business days",
-    currentStage: "diagnostics-complete",
-    stages: [
-      { key: "received", label: "Received", completed: true },
-      { key: "diagnostics", label: "Diagnostics", completed: true },
-      { key: "repair", label: "In Repair", completed: false },
-      { key: "testing", label: "Testing", completed: false },
-      { key: "ready", label: "Ready for Pickup", completed: false },
-    ],
-  };
-
-  const handleTrack = () => {
+  const handleTrack = async () => {
     if (!query.trim()) return;
     setStatus("loading");
 
-    setTimeout(() => {
-      if (query.length > 3) setStatus("found");
-      else setStatus("not-found");
-    }, 1200);
+    try {
+      const res = await fetch(`https://api.blackfroglabs.co.za/api/repairs/${query}`);
+      if (res.status === 404) {
+        setStatus("not-found");
+        return;
+      }
+
+      const data: RepairStatus = await res.json();
+      setRepairStatus(data);
+      setStatus("found");
+    } catch (err) {
+      console.error("Track repair error:", err);
+      setStatus("not-found");
+    }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleTrack();
   };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-white relative overflow-hidden transition-colors duration-500">
-      
       {/* Background Elements */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 -left-48 w-96 h-96 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl animate-pulse" />
@@ -105,7 +115,7 @@ export default function TrackRepair() {
           </div>
 
           {/* Status Card */}
-          {status === "found" && (
+          {status === "found" && repairStatus && (
             <div className="space-y-6 animate-fadeIn">
               <div className="bg-white/20 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-3xl p-8 space-y-6 shadow-lg">
                 
@@ -116,7 +126,7 @@ export default function TrackRepair() {
                     <p className="text-xl font-bold text-emerald-500 dark:text-cyan-400">{repairStatus.id}</p>
                   </div>
                   <div className="px-4 py-2 bg-emerald-500/10 dark:bg-cyan-400/10 border border-emerald-500 dark:border-cyan-400 rounded-full">
-                    <p className="text-sm font-semibold text-emerald-500 dark:text-cyan-400">In Progress</p>
+                    <p className="text-sm font-semibold text-emerald-500 dark:text-cyan-400">{repairStatus.status.replace("-", " ")}</p>
                   </div>
                 </div>
 
