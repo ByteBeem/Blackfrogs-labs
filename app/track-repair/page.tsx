@@ -122,8 +122,8 @@ export default function TrackRepair() {
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-slate-400 text-sm mb-1">Repair ID</p>
-                    <p className="text-xl font-bold text-emerald-500 dark:text-cyan-400">{repairStatus.id}</p>
+                    <p className="text-slate-400 text-sm mb-1">Repair Status</p>
+                    
                   </div>
                   <div className="px-4 py-2 bg-emerald-500/10 dark:bg-cyan-400/10 border border-emerald-500 dark:border-cyan-400 rounded-full">
                     <p className="text-sm font-semibold text-emerald-500 dark:text-cyan-400">{repairStatus.status.replace("-", " ")}</p>
