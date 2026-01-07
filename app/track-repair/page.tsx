@@ -11,6 +11,8 @@ import {
   MessageCircle,
   AlertCircle,
   Loader2,
+  AlertOctagon, // New icon for failure
+  XCircle
 } from "lucide-react";
 import Header from "../../components/Header";
 import ChatBot from "../../components/ChatBot";
@@ -28,6 +30,7 @@ type RepairStatus = {
   estimatedCompletion: string;
   currentStage: string;
   stages: RepairStage[];
+  failureReason?: string; // Added field
 };
 
 export default function TrackRepair() {
@@ -57,6 +60,13 @@ export default function TrackRepair() {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleTrack();
+  };
+
+  // Helper to get status colors
+  const getStatusColor = (status: string) => {
+    if (status === 'unfixable') return "text-red-500 border-red-500 bg-red-500/10";
+    if (status === 'completed') return "text-emerald-500 border-emerald-500 bg-emerald-500/10";
+    return "text-cyan-500 border-cyan-500 bg-cyan-500/10";
   };
 
   return (
@@ -123,10 +133,11 @@ export default function TrackRepair() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-slate-400 text-sm mb-1">Repair Status</p>
-                    
                   </div>
-                  <div className="px-4 py-2 bg-emerald-500/10 dark:bg-cyan-400/10 border border-emerald-500 dark:border-cyan-400 rounded-full">
-                    <p className="text-sm font-semibold text-emerald-500 dark:text-cyan-400">{repairStatus.status.replace("-", " ")}</p>
+                  <div className={`px-4 py-2 border rounded-full ${getStatusColor(repairStatus.status)}`}>
+                    <p className="text-sm font-semibold capitalize">
+                      {repairStatus.status === 'unfixable' ? 'Unable to Fix' : repairStatus.status.replace("-", " ")}
+                    </p>
                   </div>
                 </div>
 
@@ -141,56 +152,86 @@ export default function TrackRepair() {
                   </div>
                 </div>
 
-                {/* Progress Steps */}
-                <div className="space-y-4">
-                  <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">
-                    Repair Progress
-                  </p>
-                  <div className="space-y-3">
-                    {repairStatus.stages.map((stage) => {
-                      const isActive = stage.key === repairStatus.currentStage;
-                      const isCompleted = stage.completed;
-
-                      return (
-                        <div
-                          key={stage.key}
-                          className={`flex items-center gap-4 ${isCompleted || isActive ? "opacity-100" : "opacity-40"}`}
-                        >
-                          <div
-                            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                              isCompleted
-                                ? "bg-gradient-to-br from-emerald-500 to-cyan-500"
-                                : isActive
-                                ? "bg-cyan-500/20 border-2 border-cyan-500"
-                                : "bg-slate-300 dark:bg-slate-700 border-2 border-slate-400 dark:border-slate-800"
-                            }`}
-                          >
-                            {isCompleted ? (
-                              <CheckCircle2 size={20} className="text-white" />
-                            ) : isActive ? (
-                              <Loader2 size={20} className="text-cyan-500 animate-spin" />
-                            ) : (
-                              <div className="w-2.5 h-2.5 bg-slate-500 dark:bg-slate-600 rounded-full" />
-                            )}
-                          </div>
-                          <p className={`text-base font-medium ${isCompleted ? "text-slate-900 dark:text-white" : isActive ? "text-cyan-500" : "text-slate-500 dark:text-slate-400"}`}>
-                            {stage.label}
-                          </p>
-                          {isActive && <span className="text-xs px-2 py-1 bg-cyan-500/10 text-cyan-500 rounded-full">Current</span>}
+                {/* FAILURE ALERT - Only shows if status is unfixable */}
+                {repairStatus.status === 'unfixable' && (
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 animate-fadeIn">
+                     <div className="flex items-start gap-4">
+                        <div className="p-2 bg-red-500/20 rounded-full shrink-0">
+                           <AlertOctagon size={24} className="text-red-500" />
                         </div>
-                      );
-                    })}
+                        <div>
+                           <h3 className="text-lg font-bold text-red-500 mb-1">Repair Unsuccessful</h3>
+                           <p className="text-slate-600 dark:text-slate-300 mb-2">
+                             Unfortunately, we were unable to repair this device.
+                           </p>
+                           {repairStatus.failureReason && (
+                             <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/10">
+                               <p className="text-xs text-red-400 font-bold uppercase tracking-wider mb-1">Technician Report:</p>
+                               <p className="text-slate-800 dark:text-slate-200 font-medium">"{repairStatus.failureReason}"</p>
+                             </div>
+                           )}
+                           <p className="text-sm text-slate-500 mt-3">
+                             Please contact us or visit the store to collect your device. There is no charge for unfixable devices.
+                           </p>
+                        </div>
+                     </div>
                   </div>
-                </div>
+                )}
 
-                {/* Estimated Completion */}
-                <div className="flex items-center gap-3 pt-6 border-t border-slate-300 dark:border-slate-700">
-                  <Clock className="text-cyan-500 flex-shrink-0" size={20} />
-                  <div>
-                    <p className="text-slate-400 text-sm">Estimated Completion</p>
-                    <p className="text-base font-semibold text-slate-900 dark:text-white">{repairStatus.estimatedCompletion}</p>
+                {/* Progress Steps - Only show if NOT unfixable (or show partially) */}
+                {repairStatus.status !== 'unfixable' && (
+                  <div className="space-y-4">
+                    <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">
+                      Repair Progress
+                    </p>
+                    <div className="space-y-3">
+                      {repairStatus.stages.map((stage) => {
+                        const isActive = stage.key === repairStatus.currentStage;
+                        const isCompleted = stage.completed;
+
+                        return (
+                          <div
+                            key={stage.key}
+                            className={`flex items-center gap-4 ${isCompleted || isActive ? "opacity-100" : "opacity-40"}`}
+                          >
+                            <div
+                              className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                                isCompleted
+                                  ? "bg-gradient-to-br from-emerald-500 to-cyan-500"
+                                  : isActive
+                                  ? "bg-cyan-500/20 border-2 border-cyan-500"
+                                  : "bg-slate-300 dark:bg-slate-700 border-2 border-slate-400 dark:border-slate-800"
+                              }`}
+                            >
+                              {isCompleted ? (
+                                <CheckCircle2 size={20} className="text-white" />
+                              ) : isActive ? (
+                                <Loader2 size={20} className="text-cyan-500 animate-spin" />
+                              ) : (
+                                <div className="w-2.5 h-2.5 bg-slate-500 dark:bg-slate-600 rounded-full" />
+                              )}
+                            </div>
+                            <p className={`text-base font-medium ${isCompleted ? "text-slate-900 dark:text-white" : isActive ? "text-cyan-500" : "text-slate-500 dark:text-slate-400"}`}>
+                              {stage.label}
+                            </p>
+                            {isActive && <span className="text-xs px-2 py-1 bg-cyan-500/10 text-cyan-500 rounded-full">Current</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Estimated Completion - Hide if unfixable or completed */}
+                {repairStatus.status !== 'unfixable' && repairStatus.status !== 'completed' && (
+                  <div className="flex items-center gap-3 pt-6 border-t border-slate-300 dark:border-slate-700">
+                    <Clock className="text-cyan-500 flex-shrink-0" size={20} />
+                    <div>
+                      <p className="text-slate-400 text-sm">Estimated Completion</p>
+                      <p className="text-base font-semibold text-slate-900 dark:text-white">{repairStatus.estimatedCompletion}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
