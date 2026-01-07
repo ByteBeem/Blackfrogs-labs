@@ -10,6 +10,10 @@ import {
   Smartphone,
   FileText,
   AlertCircle,
+  Calendar,
+  Clock,
+  User,
+  Mail
 } from "lucide-react";
 import Header from "../../components/Header";
 import ChatBot from "../../components/ChatBot";
@@ -17,33 +21,70 @@ import ChatBot from "../../components/ChatBot";
 export default function BookRepair() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  
   const [formData, setFormData] = useState({
-    device: "",
-    issue: "",
     name: "",
     phone: "",
     email: "",
+    device: "",
+    issue: "",
+    date: "",
+    time: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setError("");
 
-    // Simulated submit
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      // Map form fields to backend expected format
+      const payload = {
+        customerName: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        device: formData.device,
+        issue: formData.issue,
+        date: formData.date,
+        time: formData.time,
+        notes: "Booked via website" // Optional default note
+      };
+
+      const res = await fetch("https://api.blackfroglabs.co.za/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to submit booking");
+      }
+
       setSubmitted(true);
-
+      setFormData({ name: "", phone: "", email: "", device: "", issue: "", date: "", time: "" });
+      
+      // Reset success message after 5 seconds
       setTimeout(() => {
         setSubmitted(false);
-        setFormData({ device: "", issue: "", name: "", phone: "", email: "" });
       }, 5000);
-    }, 1500);
+
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong. Please try again or contact us directly.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  // Get tomorrow's date for min attribute
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split("T")[0];
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-white relative overflow-hidden transition-colors duration-500">
@@ -78,7 +119,7 @@ export default function BookRepair() {
                 Book a Professional Repair
               </h2>
               <p className="text-slate-600 dark:text-slate-400 text-base md:text-lg leading-relaxed">
-                Tell us about your device and the issue you're experiencing. Our certified technicians will review your request and get back to you with pricing and estimated turnaround time.
+                Tell us about your device and the issue you're experiencing. Schedule a drop-off time, and our certified technicians will get your device working like new.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
@@ -104,10 +145,16 @@ export default function BookRepair() {
                 <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full mb-4">
                   <CheckCircle2 size={40} className="text-white" />
                 </div>
-                <h3 className="text-2xl md:text-3xl font-bold">Request Submitted!</h3>
+                <h3 className="text-2xl md:text-3xl font-bold">Booking Confirmed!</h3>
                 <p className="text-slate-600 dark:text-slate-400 text-base md:text-lg">
-                  Thank you for your repair request. We'll review it and contact you within 24 hours.
+                  Thank you for your booking. We have received your request and will see you at your selected time.
                 </p>
+                <button 
+                  onClick={() => setSubmitted(false)}
+                  className="px-6 py-2 text-sm font-semibold text-emerald-600 bg-emerald-50 rounded-full hover:bg-emerald-100 transition-colors"
+                >
+                  Book Another
+                </button>
               </div>
             ) : (
               <form
@@ -115,35 +162,106 @@ export default function BookRepair() {
                 className="space-y-6 bg-white dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-3xl p-8 md:p-10 shadow-2xl"
               >
                 <div className="space-y-2">
-                  <h3 className="text-xl md:text-2xl font-bold">Repair Details</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Fill in the info below to get started</p>
+                  <h3 className="text-xl md:text-2xl font-bold">Book Appointment</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Fill in the info below to schedule your repair</p>
                 </div>
 
-                {/* Form fields */}
-                {[
-                  { name: "name", icon: Smartphone, placeholder: "John Doe", type: "text" },
-                  { name: "phone", icon: Phone, placeholder: "+27 66 374 3513", type: "tel" },
-                  { name: "email", icon: MessageCircle, placeholder: "john@example.com", type: "email" },
-                  { name: "device", icon: Smartphone, placeholder: "iPhone 13, Samsung Galaxy S21", type: "text" },
-                ].map(({ name, icon: Icon, placeholder, type }) => (
-                  <div key={name} className="space-y-2">
+                {/* Contact Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2">
-                      <Icon size={16} className="text-emerald-500" />
-                      {name.charAt(0).toUpperCase() + name.slice(1)}
+                      <User size={16} className="text-emerald-500" /> Name
                     </label>
                     <input
                       required
-                      name={name}
-                      type={type}
-                      value={formData[name as keyof typeof formData]}
+                      name="name"
+                      type="text"
+                      value={formData.name}
                       onChange={handleChange}
-                      placeholder={placeholder}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 px-4 py-3 text-sm md:text-base text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                      placeholder="John Doe"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/50"
                     />
                   </div>
-                ))}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                      <Phone size={16} className="text-emerald-500" /> Phone
+                    </label>
+                    <input
+                      required
+                      name="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="+27 66 374 3513"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/50"
+                    />
+                  </div>
+                </div>
 
-                {/* Issue */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                    <Mail size={16} className="text-emerald-500" /> Email (Optional)
+                  </label>
+                  <input
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="john@example.com"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  />
+                </div>
+
+                {/* Device Info */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                    <Smartphone size={16} className="text-emerald-500" /> Device Model
+                  </label>
+                  <input
+                    required
+                    name="device"
+                    type="text"
+                    value={formData.device}
+                    onChange={handleChange}
+                    placeholder="e.g. iPhone 13 Pro Max"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  />
+                </div>
+
+                {/* Date & Time Selection */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                      <Calendar size={16} className="text-cyan-500" /> Preferred Date
+                    </label>
+                    <input
+                      required
+                      name="date"
+                      type="date"
+                      min={minDate}
+                      value={formData.date}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                      <Clock size={16} className="text-cyan-500" /> Preferred Time
+                    </label>
+                    <input
+                      required
+                      name="time"
+                      type="time"
+                      min="09:00"
+                      max="17:00"
+                      value={formData.time}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    />
+                  </div>
+                </div>
+
+                {/* Issue Description */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2">
                     <FileText size={16} className="text-emerald-500" />
@@ -154,29 +272,19 @@ export default function BookRepair() {
                     name="issue"
                     value={formData.issue}
                     onChange={handleChange}
-                    rows={4}
+                    rows={3}
                     placeholder="Describe what's wrong with your device..."
                     className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 px-4 py-3 text-sm md:text-base text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all resize-none"
                   />
                 </div>
 
-                {/* Upload */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2">
-                    <Upload size={16} className="text-emerald-500" />
-                    Upload Photos (Optional)
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 cursor-pointer"
-                  />
-                  <p className="text-xs text-slate-500 flex items-start gap-1">
-                    <AlertCircle size={12} className="mt-0.5 flex-shrink-0" />
-                    Photos help us diagnose faster
-                  </p>
-                </div>
+                {/* Error Message */}
+                {error && (
+                  <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-sm text-red-500">
+                    <AlertCircle size={16} />
+                    {error}
+                  </div>
+                )}
 
                 {/* Submit */}
                 <button
@@ -189,7 +297,7 @@ export default function BookRepair() {
                   ) : (
                     <>
                       <CheckCircle2 size={20} />
-                      <span>Submit Repair Request</span>
+                      <span>Confirm Booking</span>
                     </>
                   )}
                 </button>
