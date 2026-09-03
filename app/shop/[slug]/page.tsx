@@ -29,6 +29,7 @@ import {
   ApiProductListItem,
 } from "../../../lib/api";
 
+
 export default function ProductDetailPage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
@@ -280,7 +281,10 @@ export default function ProductDetailPage() {
             <h2 className="font-display text-2xl md:text-3xl font-bold mb-8">You May Also Like</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {relatedCardProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard
+                  key={p.id}
+                  product={p as Parameters<typeof ProductCard>[0]["product"]}
+                />
               ))}
             </div>
           </div>

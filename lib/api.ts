@@ -31,7 +31,7 @@ export interface ApiProduct {
   features: string[];
   price: number;
   compareAtPrice: number | null;
-  badge: string | null;
+  badge?: string | null;
   inStock: boolean;
   stockCount: number;
   rating: number;

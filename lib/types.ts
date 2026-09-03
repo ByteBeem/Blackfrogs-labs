@@ -11,8 +11,8 @@ export interface Product {
   shortDescription: string;
   description: string;
   features: string[];
-  icon: string;
-  colorway: [string, string];
+  icon?: string;
+  colorway?: [string, string];
   inStock: boolean;
   stockCount: number;
   sku: string;
