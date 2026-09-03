@@ -40,12 +40,12 @@ export function ProductVisual({
   className?: string;
   iconSize?: number;
 }) {
-  const Icon = ICON_MAP[product.icon] || Package;
+  const Icon = (product.icon && ICON_MAP[product.icon]) || Package;
   return (
     <div
       className={`relative flex items-center justify-center overflow-hidden ${className}`}
       style={{
-        background: `linear-gradient(145deg, ${product.colorway[0]}, ${product.colorway[1]})`,
+        background: `linear-gradient(145deg, ${product.colorway?.[0] ?? "#1f2937"}, ${product.colorway?.[1] ?? "#111827"})`,
       }}
       aria-hidden="true"
     >
