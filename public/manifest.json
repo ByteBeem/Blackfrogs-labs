@@ -1,0 +1,53 @@
+{
+  "name": "Black Frog Labs",
+  "short_name": "BlackFrogs",
+  "description": "Premium mobile accessories and expert device repairs in Lydenburg, South Africa.",
+  "id": "/",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait-primary",
+  "categories": [
+    "business",
+    "utilities",
+    "shopping"
+  ],
+  "icons": [
+    {
+      "src": "/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Book Repair",
+      "url": "/book-repair",
+      "description": "Book a device repair"
+    },
+    {
+      "name": "Track Repair",
+      "url": "/track-repair",
+      "description": "Track your repair status"
+    },
+    {
+      "name": "Shop",
+      "url": "/shop",
+      "description": "Browse accessories"
+    }
+  ]
+}

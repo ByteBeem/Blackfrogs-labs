@@ -1,0 +1,10 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Block private areas 
+Disallow: /api/
+Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://blackfroglabs.co.za/sitemap.xml
