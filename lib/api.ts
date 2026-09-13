@@ -1,3 +1,4 @@
+import type { Product } from "./types";
 const API_URL = process.env.NEXT_PUBLIC_ISDEVELOPMENT === "true" ? "http://localhost:5041" : "https://api.blackfroglabs.co.za";
 
 export interface ApiProductImage {
@@ -91,10 +92,23 @@ export async function fetchRelatedProducts(productId: string): Promise<ApiProduc
   return apiGet<ApiProductListItem[]>(`/api/products/${productId}/related`);
 }
 
-// Maps the API shape onto the field names your existing ProductCard /
-// ProductVisual components expect, so they work without modification.
-export function toCardProduct(p: ApiProductListItem | ApiProduct) {
-  const image = "images" in p ? p.images[0]?.url : p.primaryImageUrl;
+
+
+export function toCardProduct(
+  p: ApiProductListItem | ApiProduct
+): Product {
+  const image = "images" in p
+    ? p.images[0]?.url
+    : p.primaryImageUrl;
+
+  const badge =
+    p.badge === "New" ||
+    p.badge === "Bestseller" ||
+    p.badge === "Sale" ||
+    p.badge === "Limited"
+      ? p.badge
+      : undefined;
+
   return {
     id: p.id,
     slug: p.slug,
@@ -102,15 +116,25 @@ export function toCardProduct(p: ApiProductListItem | ApiProduct) {
     category: p.category,
     price: p.price,
     compareAtPrice: p.compareAtPrice ?? undefined,
-    badge: p.badge ?? undefined,
+    badge,
+    image: image ?? undefined,
     rating: p.rating,
     reviewCount: p.reviewCount,
     inStock: p.inStock,
-    image: image ?? undefined,
-    ...( "shortDescription" in p ? { shortDescription: p.shortDescription } : {} ),
-    ...( "sku" in p ? { sku: p.sku } : {} ),
-    ...( "description" in p ? { description: p.description } : {} ),
-    ...( "features" in p ? { features: p.features } : {} ),
-    ...( "stockCount" in p ? { stockCount: p.stockCount } : {} ),
+
+    shortDescription:
+      "shortDescription" in p ? p.shortDescription : "",
+
+    description:
+      "description" in p ? p.description : "",
+
+    features:
+      "features" in p ? p.features : [],
+
+    stockCount:
+      "stockCount" in p ? p.stockCount : 0,
+
+    sku:
+      "sku" in p ? p.sku : "",
   };
 }
