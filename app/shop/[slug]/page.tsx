@@ -101,14 +101,14 @@ export default function ProductDetailPage() {
   const relatedCardProducts = related.map(toCardProduct);
 
 const handleAddToCart = () => {
-  addItem(product, quantity);
+  addItem(cardProduct, quantity);
   showToast(`${quantity} × ${product.name} added to your cart.`);
 };
 
-  const handleBuyNow = () => {
-    addItem(product.id, quantity);
-    router.push("/checkout");
-  };
+const handleBuyNow = () => {
+  addItem(cardProduct, quantity);
+  router.push("/checkout");
+};
 
   return (
     <div className="bg-white pt-24 md:pt-28 pb-20">
