@@ -100,10 +100,10 @@ export default function ProductDetailPage() {
   const wishlisted = isWishlisted(product.id);
   const relatedCardProducts = related.map(toCardProduct);
 
-  const handleAddToCart = () => {
-    addItem(product.id, quantity);
-    showToast(`${quantity} × ${product.name} added to your cart.`);
-  };
+const handleAddToCart = () => {
+  addItem(product, quantity);
+  showToast(`${quantity} × ${product.name} added to your cart.`);
+};
 
   const handleBuyNow = () => {
     addItem(product.id, quantity);
