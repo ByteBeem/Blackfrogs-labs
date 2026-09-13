@@ -47,7 +47,19 @@ export default function CartPage() {
           {items.map(({ product, quantity }) => (
             <div key={product.id} className="flex gap-4 py-6">
               <Link href={`/shop/${product.slug}`} className="shrink-0">
-                <ProductVisual product={product} className="w-24 h-24 md:w-28 md:h-28 rounded-2xl" iconSize={32} />
+                {product.image ? (
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-24 h-24 md:w-28 md:h-28 rounded-2xl object-cover"
+                  />
+                ) : (
+                  <ProductVisual
+                    product={product}
+                    className="w-24 h-24 md:w-28 md:h-28 rounded-2xl"
+                    iconSize={32}
+                  />
+                )}
               </Link>
               <div className="flex-1 min-w-0 flex flex-col">
                 <div className="flex items-start justify-between gap-3">
