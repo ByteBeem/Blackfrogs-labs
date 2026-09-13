@@ -17,7 +17,14 @@ import {
   BadgeCheck,
   Quote,
 } from "lucide-react";
-import { PRODUCTS, CATEGORIES, formatPrice } from "../lib/products";
+import { useEffect, useState } from "react";
+import {
+  fetchProducts,
+  fetchCategories,
+  toCardProduct,
+} from "../lib/api";
+import type { Product } from "../lib/types";
+import { formatPrice } from "../lib/products";
 import { ProductCard } from "../components/ProductCard";
 import { ProductVisual } from "../components/ProductVisual";
 import { StarRating } from "../components/StarRating";
@@ -56,8 +63,50 @@ const TESTIMONIALS = [
 ];
 
 export default function Home() {
-  const featured = PRODUCTS.filter((p) => p.badge === "Bestseller").slice(0, 4);
-  const newArrivals = PRODUCTS.filter((p) => p.badge === "New").slice(0, 4);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadHomeData() {
+      try {
+        const [productResult, categoryResult] = await Promise.all([
+          fetchProducts({
+            page: 1,
+            pageSize: 60,
+          }),
+          fetchCategories(),
+        ]);
+
+        if (cancelled) return;
+
+        setProducts(productResult.items.map(toCardProduct));
+        setCategories(categoryResult.filter((c) => c !== "All"));
+      } catch (error) {
+        console.error("Failed to load homepage products:", error);
+      } finally {
+        if (!cancelled) {
+          setLoadingProducts(false);
+        }
+      }
+    }
+
+    loadHomeData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const featured = products
+    .filter((p) => p.badge === "Bestseller")
+    .slice(0, 4);
+
+  const newArrivals = products
+    .filter((p) => p.badge === "New")
+    .slice(0, 4);
 
   return (
     <div className="bg-white text-gray-900">
@@ -144,7 +193,7 @@ export default function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {CATEGORIES.filter((c) => c !== "All").map((cat) => {
+          {categories.map((cat) => {
             const Icon = CATEGORY_ICONS[cat] || Smartphone;
             return (
               <Link
