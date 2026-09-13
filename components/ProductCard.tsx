@@ -45,7 +45,19 @@ export function ProductCard({ product }: { product: Product }) {
       className="group relative flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-black hover:shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)] transition-all duration-300"
     >
       <div className="relative aspect-square">
-        <ProductVisual product={product} className="w-full h-full" iconSize={56} />
+        {product.image ? (
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <ProductVisual
+              product={product}
+              className="w-full h-full"
+              iconSize={56}
+            />
+          )}
 
         {product.badge && (
           <span
