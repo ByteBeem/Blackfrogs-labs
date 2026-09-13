@@ -21,13 +21,16 @@ export function ProductCard({ product }: { product: Product }) {
   const { showToast } = useToast();
   const wishlisted = isWishlisted(product.id);
 
-  const handleAdd = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!product.inStock) return;
-    addItem(product.id, 1);
-    showToast(`${product.name} added to your cart.`);
-  };
+const handleAdd = (e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (!product.inStock) return;
+
+  addItem(product, 1);
+
+  showToast(`${product.name} added to your cart.`);
+};
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
