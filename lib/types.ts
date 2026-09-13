@@ -8,12 +8,12 @@ export interface Product {
   rating: number;
   reviewCount: number;
   badge?: "New" | "Bestseller" | "Sale" | "Limited" | null;
+  image?: string;
   shortDescription: string;
   description: string;
   features: string[];
   icon?: string;
   colorway?: [string, string];
-  image?: string;
   inStock: boolean;
   stockCount: number;
   sku: string;
