@@ -13,6 +13,7 @@ export interface Product {
   features: string[];
   icon?: string;
   colorway?: [string, string];
+  image?: string;
   inStock: boolean;
   stockCount: number;
   sku: string;
